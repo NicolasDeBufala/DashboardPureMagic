@@ -1,0 +1,82 @@
+<div>
+  <h3>Filter Data</h3>
+
+  <label for="managerName">Manager Name:</label>
+  <input type="text" id="managerName" placeholder="Enter Manager Name"><br><br>
+
+  <label for="statuses">Select Statuses:</label><br>
+  <input type="checkbox" id="status1" value="Cloturé" checked> Cloturé<br>
+  <input type="checkbox" id="status2" value="En attente" checked> En attente<br>
+  <input type="checkbox" id="status3" value="En cours" checked> En cours<br>
+  <input type="checkbox" id="status4" value="Validé" checked> Validé<br>
+  <input type="checkbox" id="status5" value="Refusé" checked> Refusé<br><br>
+
+  <button onclick="submitRequest()">Submit</button>
+  
+  <div id="results">
+    <h4>Results:</h4>
+    <table id="resultsTable" border="1">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Manager</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Results will appear here -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  async function submitRequest() {
+    // Get input values
+    const managerName = document.getElementById('managerName').value;
+    const statuses = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+      .map(cb => cb.value);
+
+    // Validate inputs
+    if (!managerName) {
+      alert("Please enter a Manager Name.");
+      return;
+    }
+
+    // Call the Power Automate Flow
+    const response = await fetch('<YOUR_FLOW_ENDPOINT>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ManagerName: managerName,
+        Statuses: statuses
+      })
+    });
+
+    // Process the response
+    const data = await response.json();
+
+    // Populate the table
+    const resultsTable = document.getElementById('resultsTable').querySelector('tbody');
+    resultsTable.innerHTML = ""; // Clear previous results
+
+    if (data.length === 0) {
+      const row = resultsTable.insertRow();
+      const cell = row.insertCell(0);
+      cell.colSpan = 4;
+      cell.textContent = "No results found.";
+      return;
+    }
+
+    data.forEach(row => {
+      const tableRow = resultsTable.insertRow();
+      tableRow.insertCell(0).textContent = row.Nom;
+      tableRow.insertCell(1).textContent = row.Prénom;
+      tableRow.insertCell(2).textContent = row.Manager;
+      tableRow.insertCell(3).textContent = row.Statut;
+    });
+  }
+</script>
